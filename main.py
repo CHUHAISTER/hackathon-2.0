@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+    # -*- coding: utf-8 -*-
 
 import pygame
 from textboxify import TextBoxFrame
@@ -138,10 +138,10 @@ class Game:
             bg_color=(255, 154, 64),
         )
 
-        self.dialog_box.set_indicator()
         self.activate_lobby = True
         self.activate_lvl0 = False
         self.activate_lvl1 = False
+        self.mob_spawn = False
 
         self.level1 = Level("lobby")
 
@@ -184,7 +184,6 @@ class Game:
             font_size=26,
             bg_color=(255, 154, 64),
         )
-        self.dialog_box_1.set_indicator()
 
         self.dialog_box_1.set_portrait()
 
@@ -282,12 +281,19 @@ class Game:
                         if player.rect[1] >=4190 and player.rect[0]>=4098:
                             self.activate_lvl0 = False
                             self.activate_lvl1 = True
+                            self.mob_spawn = True
+                            
                             self.level1.surface.fill((108, 73, 34))
                             self.level1 = Level("level2")
 
                             player.rect[0], player.rect[1] = 500, 500
                             self.dialog_group_1.add(self.info_text_3)
                     elif self.activate_lvl1:
+                        self.level1.surface.fill((108, 73, 34))
+                        self.level1 = Level("level2")
+                        if (self.mob_spawn == True):
+                            self.create_melee()
+                            self.mob_spawn = False
                         if self.score == 3:
                             self.screen_surface.fill((150, 30, 0))
                             self.you_win()
@@ -496,6 +502,14 @@ class Game:
         self.camera_surface.blit(self.level1.surface, (0, 0),
                                  area=(x_rect_camera, y_rect_camera, self.window_width, self.window_height))
 
+    def create_melee(self):
+        for mob_number in range(10):
+            x = random.randint(200, self.level1.level_size[0])
+            y = random.randint(200, self.level1.level_size[1])
+            max_speed = random.randint(2, 4)
+            mob = Mob(x, y, max_speed, 'skeleton_front')
+            self.mobs.append(mob)
+
 
     def draw_level2(self):
         self.level1.surface.fill((100, 63, 0))
@@ -507,6 +521,10 @@ class Game:
         self.level1.surface.blit(boss.surface, boss.rect)
 
         self.level1.build_level()
+
+        for mob in self.mobs:
+            mob.behaviour(player)
+            self.level1.surface.blit(mob.surface, mob.rect)
 
         self.screen_surface.blit(self.camera_surface, (0, 0))
         x_rect_camera= player.rect[0]-(self.window_width/2)

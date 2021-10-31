@@ -323,3 +323,40 @@ class Boss(MovableSprite):
     def __init__(self, x, y, max_speed, image):
         super().__init__(x, y, max_speed, image)
         self.rect = self.surface.get_rect(midright=(x, y))
+
+class Archer(Sprite):
+    def __init__(self, x, y, image):
+        super().__init__(x, y, image)
+
+        # Ray settings
+        self.fov = math.pi / 3  # 60 degrees
+        self.angle = 0  # Start look
+        self.ray_number = 1  # I draw N rays
+        self.d_angle = self.fov / self.ray_number  # angle between rays inside
+        self.fov_length = 640  # How far I can see
+        self.shuriken = None
+
+    def behaviour(self):
+        pass
+
+class Shuriken(MovableSprite):
+    def __init__(self, x, y, max_speed, image, player):
+        super().__init__(x, y, max_speed, image)
+        self.x = x
+        self.y = y
+        self.max_speed = max_speed
+        self.player = player
+        self.dx = -((self.x - player.rect[0]) / max_speed)
+        self.dy = -((self.y - player.rect[1]) / max_speed)
+
+    def collision_mmm(self, player):
+        if self.rect[0] + self.rect[2] + self.dx < player.rect[0] or self.rect[0] + self.dx > player.rect[0]+player.rect[2]:
+            if self.rect[1] + self.rect[3] + self.dy < player.rect[1] or self.rect[1] + self.dy > player.rect[1]+player.rect[3]:
+                del self
+
+    def move(self, level):
+        self.rect[0] += self.dx
+        self.rect[1] += self.dy
+        self.collision_mmm(self.player)
+        level.surface.blit(self.surface, self.rect)
+
